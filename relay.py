@@ -65,4 +65,4 @@ class RelayHandler(InboundMailHandler):
             logging.info('Dropping mail (no forward recipients)')
 
 
-app = webapp2.WSGIApplication([RelayHandler.mapping()], debug=True)
+app = webapp2.WSGIApplication([RelayHandler.mapping()], debug=False)

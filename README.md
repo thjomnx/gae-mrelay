@@ -13,7 +13,9 @@ body. Lines like the following will trigger the
 appropriate forwarding type:
 
 FwdTo: someone@provider.net
+
 FwdCc: someone@provider.net
+
 FwdBcc: someone@provider.net
 
 The lines are removed before the mail is forwarded.

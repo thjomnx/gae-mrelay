@@ -10,6 +10,7 @@ from config import *
 p_to = re.compile('^FwdTo: ([\w\.@]+)$')
 p_cc = re.compile('^FwdCc: ([\w\.@]+)$')
 p_bcc = re.compile('^FwdBcc: ([\w\.@]+)$')
+p_key = re.compile('Key: ([^ .]+)$')
 
 class RelayHandler(InboundMailHandler):
     def receive(self, mail_message):
@@ -18,6 +19,7 @@ class RelayHandler(InboundMailHandler):
         to = []
         cc = []
         bcc = []
+        key = ''
         
         raw = str(mail_message.body)
         body = ''
@@ -43,26 +45,35 @@ class RelayHandler(InboundMailHandler):
                 bcc.append((m.group(0), m.group(1),))
                 continue
             
+            m = p_key.match(line)
+            
+            if m is not None:
+                key = m.group(1)
+                continue
+            
             body += line + '\n'
         
-        if to or cc or bcc:
-            message = mail.EmailMessage(sender=originator, subject=mail_message.subject)
-            message.body = body.lstrip()
-            
-            if to:
-                message.to = [addr[1] for addr in to]
-            
-            if cc:
-                message.cc = [addr[1] for addr in cc]
-            
-            if bcc:
-                message.bcc = [addr[1] for addr in bcc]
-            
-            logging.info('Forwarding mail to recipients')
-            
-            message.send()
+        if key == appkey:
+            if to or cc or bcc:
+                message = mail.EmailMessage(sender=originator, subject=mail_message.subject)
+                message.body = body.lstrip()
+                
+                if to:
+                    message.to = [addr[1] for addr in to]
+                
+                if cc:
+                    message.cc = [addr[1] for addr in cc]
+                
+                if bcc:
+                    message.bcc = [addr[1] for addr in bcc]
+                
+                logging.info('Forwarding mail to recipients')
+                
+                message.send()
+            else:
+                logging.info('Dropping mail (no forward recipients)')
         else:
-            logging.info('Dropping mail (no forward recipients)')
+            logging.info('Dropping mail (invalid application key)')
 
 
 app = webapp2.WSGIApplication([RelayHandler.mapping()], debug=False)

@@ -7,6 +7,7 @@ threadsafe: true
 handlers:
 - url: /_ah/mail/.+
   script: relay.app
+  login: admin
 
 inbound_services:
 - mail
